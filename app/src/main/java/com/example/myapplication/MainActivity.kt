@@ -17,9 +17,11 @@ class MainActivity : AppCompatActivity() {
 
     var answer: Int? = null
     var progressCount = 0
-    var correctAnswers=0
+    var correctAnswers = 0
     var questionList = getQuestions();
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_quiz_questions)
 
         var tvQuestion: TextView? = null
         var btnSubmit: Button? = null
@@ -31,8 +33,6 @@ class MainActivity : AppCompatActivity() {
         var tvOptionThree: TextView? = null
         var tvOptionFour: TextView? = null
 
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_quiz_questions)
 
         tvQuestion = findViewById(R.id.tv_question)
         btnSubmit = findViewById(R.id.btn_submit)
@@ -44,14 +44,32 @@ class MainActivity : AppCompatActivity() {
         tvOptionThree = findViewById(R.id.tv_option_three)
         tvOptionFour = findViewById(R.id.tv_option_four)
 
-        //to show the quiz
-        tvQuestion.text = questionList.get(progressCount).question
-        ivCountry.setImageResource(questionList.get(progressCount).image)
-        tvOptionOne.text = questionList.get(progressCount).optionOne
-        tvOptionTwo.text = questionList.get(progressCount).optionTwo
-        tvOptionThree.text = questionList.get(progressCount).optionThree
-        tvOptionFour.text = questionList.get(progressCount).optionFour
-        tvQuizProgress.text = progressCount.toString()
+        //Update the UI
+        fun updateUIForQuestion(index: Int) {
+            if (index < questionList.size) {
+                tvQuestion.text = questionList[index].question
+                ivCountry.setImageResource(questionList[index].image)
+                tvOptionOne.text = questionList[index].optionOne
+                tvOptionTwo.text = questionList[index].optionTwo
+                tvOptionThree.text = questionList[index].optionThree
+                tvOptionFour.text = questionList[index].optionFour
+                val allOptions =
+                    listOf<TextView>(tvOptionOne, tvOptionTwo, tvOptionThree, tvOptionFour)
+                allOptions.forEach { it.setTextColor(resources.getColor(android.R.color.black)) }
+                // Update progress text
+                tvQuizProgress.text = (index).toString() // Display 1-based index for progress
+                pbQuizProgress.progress = progressCount
+                answer = null
+            } else {
+                // Handle end of questions, e.g., display a message or navigate to another screen
+                // For example:
+                // tvQuestion.text = "Quiz completed!"
+                val intent = Intent(this, ResultActivity::class.java)
+                intent.putExtra("correctAnswers", correctAnswers)
+                startActivity(intent)
+            }
+        }
+        updateUIForQuestion(progressCount)
 
         // Function to set answer and highlight selected option
         fun setAnswerAndHighlight(option: Int, textView: TextView) {
@@ -106,30 +124,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        //Update the UI
-        fun updateUIForQuestion(index: Int) {
-            if (index < questionList.size) {
-            tvQuestion.text = questionList[index].question
-            ivCountry.setImageResource(questionList[index].image)
-            tvOptionOne.text = questionList[index].optionOne
-            tvOptionTwo.text = questionList[index].optionTwo
-            tvOptionThree.text = questionList[index].optionThree
-            tvOptionFour.text = questionList[index].optionFour
-            val allOptions = listOf<TextView>(tvOptionOne, tvOptionTwo, tvOptionThree, tvOptionFour)
-            allOptions.forEach { it.setTextColor(resources.getColor(android.R.color.black)) }
-            // Update progress text
-            tvQuizProgress.text = (index).toString() // Display 1-based index for progress
-            pbQuizProgress.progress=progressCount
-            answer=null
-            }else{
-                // Handle end of questions, e.g., display a message or navigate to another screen
-                // For example:
-                // tvQuestion.text = "Quiz completed!"
-                val intent = Intent(this, ResultActivity::class.java)
-                intent.putExtra("correctAnswers", correctAnswers)
-                startActivity(intent)
-            }
-        }
+
 
         //Event handling for submit
         btnSubmit.setOnClickListener {
@@ -139,8 +134,8 @@ class MainActivity : AppCompatActivity() {
                     progressCount++
                     correctAnswers++
 
-                    Log.d("MainActivity", "Correct answers="+correctAnswers)
-                        updateUIForQuestion(progressCount)
+                    Log.d("MainActivity", "Correct answers=" + correctAnswers)
+                    updateUIForQuestion(progressCount)
 
                 }
 
